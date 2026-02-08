@@ -282,10 +282,10 @@ classpulse/
 
 ## 👥 Team Members
 
-- Vasanth
-- Shagufta
-- Meghana
-- Nagesh
+- Vasanthadithya 
+- Shaguftha
+- B.Meghana
+- P.Nagesh
 
 ---
 
