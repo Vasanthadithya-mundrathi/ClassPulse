@@ -1,0 +1,2077 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClassPulse - Smart Attendance System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #3b82f6;
+            --secondary-color: #64748b;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background);
+            color: var(--text-primary);
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+
+        .app {
+            max-width: 414px;
+            margin: 0 auto;
+            background: var(--surface);
+            min-height: 100vh;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Screens */
+        .screen {
+            display: none;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* Splash Screen */
+        .splash {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            animation: pulse 2s infinite;
+        }
+
+        .tagline {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+
+        .loading {
+            width: 50px;
+            height: 4px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .loading-bar {
+            width: 0;
+            height: 100%;
+            background: white;
+            border-radius: 2px;
+            animation: loading 3s ease-out forwards;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes loading {
+            to { width: 100%; }
+        }
+
+        /* Header */
+        .header {
+            background: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .header h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        /* Registration Form */
+        .form-container {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: white;
+        }
+
+        .photo-upload {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .photo-upload:hover {
+            border-color: var(--primary-color);
+        }
+
+        .photo-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--background);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.5rem;
+            overflow: hidden;
+        }
+
+        .photo-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .uuid-display {
+            background: var(--background);
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            word-break: break-all;
+        }
+
+        .permissions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .permission-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem;
+            background: var(--background);
+            border-radius: 8px;
+        }
+
+        .permission-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .permission-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-granted {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        .status-pending {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.875rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--background);
+            color: var(--text-primary);
+            border: 2px solid var(--border);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        /* Home Screen */
+        .home-content {
+            flex: 1;
+            padding: 1.5rem;
+        }
+
+        .welcome {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .welcome h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .status-card {
+            background: var(--surface);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+        }
+
+        .status-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        .status-inactive {
+            background: rgba(100, 116, 139, 0.1);
+            color: var(--secondary-color);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: var(--surface);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .timetable-preview {
+            background: var(--surface);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .timetable-header {
+            padding: 1rem;
+            background: var(--background);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .class-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .class-item:last-child {
+            border-bottom: none;
+        }
+
+        .class-time {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .class-subject {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .class-details {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Settings */
+        .settings-content {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .settings-section {
+            background: var(--surface);
+            margin-bottom: 1rem;
+        }
+
+        .settings-header {
+            padding: 1rem 1.5rem;
+            background: var(--background);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+        }
+
+        .settings-header h3 {
+            flex: 1;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .settings-body {
+            padding: 1.5rem;
+            display: none;
+        }
+
+        .settings-body.expanded {
+            display: block;
+        }
+
+        .setting-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .setting-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .slider-container {
+            margin: 1rem 0;
+        }
+
+        .slider {
+            width: 100%;
+            -webkit-appearance: none;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--border);
+            outline: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+        }
+
+        .slider-value {
+            text-align: center;
+            margin-top: 0.5rem;
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+
+        .toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 1rem 0;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--border);
+            transition: 0.4s;
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        .toggle-input:checked + .toggle-slider {
+            background-color: var(--primary-color);
+        }
+
+        .toggle-input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+
+        .test-connection {
+            background: var(--success-color);
+            color: white;
+            margin-top: 1rem;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: around;
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: color 0.2s;
+            text-decoration: none;
+            color: var(--text-secondary);
+        }
+
+        .nav-item.active {
+            color: var(--primary-color);
+        }
+
+        .nav-icon {
+            font-size: 1.25rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .nav-label {
+            font-size: 0.75rem;
+        }
+
+        /* Live Attendance */
+        .live-status {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .status-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .status-present {
+            background: linear-gradient(135deg, var(--success-color), #059669);
+        }
+
+        .status-absent {
+            background: linear-gradient(135deg, var(--error-color), #dc2626);
+        }
+
+        .status-proxy {
+            background: linear-gradient(135deg, var(--warning-color), #d97706);
+        }
+
+        .pulse {
+            animation: pulse-ring 2s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1.1);
+                opacity: 0;
+            }
+        }
+
+        .time-counter {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin: 1rem 0;
+        }
+
+        .detection-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .detection-item {
+            text-align: center;
+            padding: 1rem;
+            background: var(--background);
+            border-radius: 8px;
+        }
+
+        .detection-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .detection-strong {
+            color: var(--success-color);
+        }
+
+        .detection-weak {
+            color: var(--warning-color);
+        }
+
+        .detection-none {
+            color: var(--error-color);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--text-primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        /* Profile Screen */
+        .profile-header {
+            text-align: center;
+            padding: 2rem 1.5rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+            color: white;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 3rem;
+        }
+
+        .profile-info {
+            padding: 1.5rem;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .info-label {
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .info-value {
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .logout-btn {
+            background: var(--error-color);
+            margin: 2rem 1.5rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .form-container {
+                padding: 1rem;
+            }
+            
+            .home-content {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- Splash Screen -->
+        <div class="screen splash active" id="splash">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                ClassPulse
+            </div>
+            <div class="tagline">Smart Attendance System</div>
+            <div class="loading">
+                <div class="loading-bar"></div>
+            </div>
+        </div>
+
+        <!-- Registration Screen -->
+        <div class="screen" id="registration">
+            <div class="header">
+                <h1>Student Registration</h1>
+            </div>
+            <div class="form-container">
+                <form id="registrationForm">
+                    <!-- Personal Details -->
+                    <div class="form-section">
+                        <div class="section-title">
+                            <i class="fas fa-user"></i>
+                            Personal Details
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="photo-upload" onclick="document.getElementById('photoInput').click()">
+                                <div class="photo-preview" id="photoPreview">
+                                    <i class="fas fa-camera" style="font-size: 2rem; color: var(--text-secondary);"></i>
+                                </div>
+                                <div>Tap to upload photo</div>
+                                <input type="file" id="photoInput" accept="image/*" style="display: none;">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" class="form-input" id="studentName" value="Arjun Sharma" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-input" id="studentEmail" value="arjun.sharma@college.edu" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Phone</label>
+                            <input type="tel" class="form-input" id="studentPhone" value="+91 9876543210" required>
+                        </div>
+                    </div>
+
+                    <!-- Academic Information -->
+                    <div class="form-section">
+                        <div class="section-title">
+                            <i class="fas fa-graduation-cap"></i>
+                            Academic Information
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Course</label>
+                            <select class="form-select" id="studentCourse" required>
+                                <option value="Computer Science Engineering" selected>Computer Science Engineering</option>
+                                <option value="Electrical Engineering">Electrical Engineering</option>
+                                <option value="Mechanical Engineering">Mechanical Engineering</option>
+                                <option value="Civil Engineering">Civil Engineering</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Year</label>
+                            <select class="form-select" id="studentYear" required>
+                                <option value="1st Year">1st Year</option>
+                                <option value="2nd Year">2nd Year</option>
+                                <option value="3rd Year" selected>3rd Year</option>
+                                <option value="4th Year">4th Year</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Section</label>
+                            <select class="form-select" id="studentSection" required>
+                                <option value="A" selected>A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Device Information -->
+                    <div class="form-section">
+                        <div class="section-title">
+                            <i class="fas fa-mobile-alt"></i>
+                            Device Information
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Device UUID</label>
+                            <div class="uuid-display" id="deviceUUID">550e8400-e29b-41d4-a716-446655440000</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">MAC Address</label>
+                            <div class="uuid-display" id="macAddress">02:42:ac:11:00:02</div>
+                        </div>
+                    </div>
+
+                    <!-- Permissions -->
+                    <div class="form-section">
+                        <div class="section-title">
+                            <i class="fas fa-shield-alt"></i>
+                            Device Permissions
+                        </div>
+                        
+                        <div class="permissions">
+                            <div class="permission-item">
+                                <div class="permission-info">
+                                    <i class="fas fa-bluetooth" style="color: var(--primary-color);"></i>
+                                    <div>
+                                        <div>Bluetooth</div>
+                                        <small>Required for attendance detection</small>
+                                    </div>
+                                </div>
+                                <span class="permission-status status-granted" id="bluetoothStatus">Granted</span>
+                            </div>
+                            
+                            <div class="permission-item">
+                                <div class="permission-info">
+                                    <i class="fas fa-wifi" style="color: var(--primary-color);"></i>
+                                    <div>
+                                        <div>Wi-Fi</div>
+                                        <small>Network connectivity &amp; detection</small>
+                                    </div>
+                                </div>
+                                <span class="permission-status status-granted" id="wifiStatus">Granted</span>
+                            </div>
+                            
+                            <div class="permission-item">
+                                <div class="permission-info">
+                                    <i class="fas fa-map-marker-alt" style="color: var(--primary-color);"></i>
+                                    <div>
+                                        <div>Location</div>
+                                        <small>Geofencing &amp; classroom detection</small>
+                                    </div>
+                                </div>
+                                <span class="permission-status status-granted" id="locationStatus">Granted</span>
+                            </div>
+                            
+                            <div class="permission-item">
+                                <div class="permission-info">
+                                    <i class="fas fa-camera" style="color: var(--primary-color);"></i>
+                                    <div>
+                                        <div>Camera</div>
+                                        <small>Verification &amp; headcount</small>
+                                    </div>
+                                </div>
+                                <span class="permission-status status-granted" id="cameraStatus">Granted</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-secondary" onclick="saveToFirebase()">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            Save to Firebase
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-check"></i>
+                            Complete Setup
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Home Screen -->
+        <div class="screen" id="home">
+            <div class="welcome">
+                <h2>Welcome back, <span id="welcomeName">Arjun</span>!</h2>
+                <p>Monday, October 13, 2025</p>
+            </div>
+            
+            <div class="home-content">
+                <div class="status-card">
+                    <div class="status-header">
+                        <h3>Current Status</h3>
+                        <div class="status-indicator status-active" id="currentStatus">
+                            <i class="fas fa-check-circle"></i>
+                            In Class
+                        </div>
+                    </div>
+                    <p>Data Structures - CS-101</p>
+                    <small>09:00 - 10:30 with Dr. Priya Nair</small>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value">3</div>
+                        <div class="stat-label">Classes Today</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">93.3%</div>
+                        <div class="stat-label">Attendance</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">42</div>
+                        <div class="stat-label">Attended</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">45</div>
+                        <div class="stat-label">Total Classes</div>
+                    </div>
+                </div>
+
+                <div class="timetable-preview">
+                    <div class="timetable-header">
+                        <h3>Today's Schedule</h3>
+                        <button class="btn btn-primary" style="width: auto; padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="uploadTimetable()">
+                            <i class="fas fa-upload"></i>
+                            Upload
+                        </button>
+                    </div>
+                    <div id="todayClasses">
+                        <div class="class-item">
+                            <div class="class-time">09:00 - 10:30</div>
+                            <div class="class-subject">Data Structures</div>
+                            <div class="class-details">CS-101 • Dr. Priya Nair</div>
+                        </div>
+                        <div class="class-item">
+                            <div class="class-time">11:00 - 12:30</div>
+                            <div class="class-subject">Database Systems</div>
+                            <div class="class-details">CS-102 • Prof. Rajesh Kumar</div>
+                        </div>
+                        <div class="class-item">
+                            <div class="class-time">14:00 - 15:30</div>
+                            <div class="class-subject">Computer Networks</div>
+                            <div class="class-details">CS-103 • Dr. Anita Singh</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bottom-nav">
+                <a href="#" class="nav-item active" onclick="switchScreen('home')">
+                    <i class="fas fa-home nav-icon"></i>
+                    <span class="nav-label">Home</span>
+                </a>
+                <a href="#" class="nav-item" onclick="switchScreen('timetable')">
+                    <i class="fas fa-calendar nav-icon"></i>
+                    <span class="nav-label">Timetable</span>
+                </a>
+                <a href="#" class="nav-item" onclick="switchScreen('settings')">
+                    <i class="fas fa-cog nav-icon"></i>
+                    <span class="nav-label">Settings</span>
+                </a>
+                <a href="#" class="nav-item" onclick="switchScreen('profile')">
+                    <i class="fas fa-user nav-icon"></i>
+                    <span class="nav-label">Profile</span>
+                </a>
+                <a href="#" class="nav-item" onclick="switchScreen('live')">
+                    <i class="fas fa-broadcast-tower nav-icon"></i>
+                    <span class="nav-label">Live</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Timetable Screen -->
+        <div class="screen" id="timetable">
+            <div class="header">
+                <button class="back-btn" onclick="switchScreen('home')">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h1>Timetable</h1>
+            </div>
+            
+            <div class="home-content">
+                <div class="btn-group" style="margin-bottom: 1.5rem;">
+                    <button class="btn btn-primary" onclick="uploadTimetable()">
+                        <i class="fas fa-upload"></i>
+                        Upload Timetable
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportTimetable()">
+                        <i class="fas fa-download"></i>
+                        Export
+                    </button>
+                </div>
+
+                <div class="timetable-preview" id="weeklyTimetable">
+                    <!-- Weekly timetable will be populated here -->
+                </div>
+            </div>
+            
+            <div class="bottom-nav">
+                <a href="#" class="nav-item" onclick="switchScreen('home')">
+                    <i class="fas fa-home nav-icon"></i>
+                    <span class="nav-label">Home</span>
+                </a>
+                <a href="#" class="nav-item active" onclick="switchScreen('timetable')">
+                    <i class="fas fa-calendar nav-icon"></i>
+                    <span class="nav-label">Timetable</span>
+                </a>
+                <a href="#" class="nav-item" onclick="switchScreen('settings')">
+                    <i class="fas fa-cog nav-icon"></i>
+                    <span class="nav-label">Settings</span>
+                </a>
+                <a href="#" class="nav-item" onclick="switchScreen('profile')">
+                    <i class="fas fa-user nav-icon"></i>
+                    <span class="nav-label">Profile</span>
+                </a>
+                <a href="#" class="nav-item" onclick="switchScreen('live')">
+                    <i class="fas fa-broadcast-tower nav-icon"></i>
+                    <span class="nav-label">Live</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Settings Screen -->
+        <div class="screen" id="settings">
+            <div class="header">
+                <button class="back-btn" onclick="switchScreen('home')">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h1>Configuration Settings</h1>
+            </div>
+            
+            <div class="settings-content">
+                <!-- Raspberry Pi Settings -->
+                <div class="settings-section">
+                    <div class="settings-header" onclick="toggleSection('pi-settings')">
+                        <i class="fas fa-raspberry-pi" style="color: #c51a4a;"></i>
+                        <h3>Raspberry Pi Network</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="settings-body" id="pi-settings">
+                        <div class="setting-group">
+                            <label class="setting-label">Pi IP Address</label>
+                            <input type="text" class="form-input" id="piIpAddress" value="192.168.1.100" placeholder="192.168.1.100">
+                        </div>
+                        
+                        <div class="setting-group">
+                            <label class="setting-label">Communication Port</label>
+                            <input type="number" class="form-input" id="piPort" value="5000" min="1000" max="9999">
+                        </div>
+                        
+                        <div class="setting-group">
+                            <label class="setting-label">Connection Timeout</label>
+                            <div class="slider-container">
+                                <input type="range" class="slider" id="piTimeout" min="5" max="30" value="15" oninput="updateSliderValue('piTimeout', 'piTimeoutValue')">
+                                <div class="slider-value" id="piTimeoutValue">15 seconds</div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-group">
+                            <label class="setting-label">Retry Attempts</label>
+                            <div class="slider-container">
+                                <input type="range" class="slider" id="piRetry" min="1" max="5" value="3" oninput="updateSliderValue('piRetry', 'piRetryValue')">
+                                <div class="slider-value" id="piRetryValue">3 attempts</div>
+                            </div>
+                        </div>
+                        
+                        <button class="btn test-connection" onclick="testConnection()">
+                            <i class="fas fa-wifi"></i>
+                            Test Connection
+                        </button>
+                        
+                        <div class="btn-group">
+                            <button class="btn btn-secondary" onclick="resetPiSettings()">
+                                <i class="fas fa-undo"></i>
+                                Reset
+                            </button>
+                            <button class="btn btn-primary" onclick="savePiSettings()">
+                                <i class="fas fa-save"></i>
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detection Parameters -->
+                <div class="settings-section">
+                    <div class="settings-header" onclick="toggleSection('detection-settings')">
+                        <i class="fas fa-radar" style="color: var(--primary-color);"></i>
+                        <h3>Detection Parameters</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="settings-body" id="detection-settings">
+                        <div class="setting-group">
+                            <label class="setting-label">Bluetooth Scan Interval</label>
+                            <div class="slider-container">
+                                <input type="range" class="slider" id="bluetoothInterval" min="30" max="300" value="60" oninput="updateSliderValue('bluetoothInterval', 'bluetoothIntervalValue')">
+                                <div class="slider-value" id="bluetoothIntervalValue">60 seconds</div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-group">
+                            <label class="setting-label">Wi-Fi Probe Timeout</label>
+                            <div class="slider-container">
+                                <input type="range" class="slider" id="wifiTimeout" min="10" max="60" value="30" oninput="updateSliderValue('wifiTimeout', 'wifiTimeoutValue')">
+                                <div class="slider-value" id="wifiTimeoutValue">30 seconds</div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-group">
+                            <label class="setting-label">RSSI Threshold</label>
+                            <div class="slider-container">
+                                <input type="range" class="slider" id="rssiThreshold" min="-90" max="-30" value="-70" oninput="updateSliderValue('rssiThreshold', 'rssiThresholdValue')">
+                                <div class="slider-value" id="rssiThresholdValue">-70 dBm</div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-group">
+                            <label class="setting-label">Detection Sensitivity</label>
+                            <select class="form-select" id="detectionSensitivity">
+                                <option value="Low">Low</option>
+                                <option value="Medium" selected>Medium</option>
+                                <option value="High">High</option>
+                            </select>
+                        </div>
+                        
+                        <div class="btn-group">
+                            <button class="btn btn-secondary" onclick="resetDetectionSettings()">
+                                <i class="fas fa-undo"></i>
+                                Reset
+                            </button>
+                            <button class="btn btn-primary" onclick="saveDetectionSettings()">
+                                <i class="fas fa-save"></i>
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attendance Rules -->
+                <div class="settings-section">
+                    <div class="settings-header" onclick="toggleSection('attendance-settings')">
+                        <i class="fas fa-user-check" style="color: var(--success-color);"></i>
+                        <h3>Attendance Rules</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="settings-body" id="attendance-settings">
+                        <div class="setting-group">
+                            <label class="setting-label">Present Duration Threshold</label>
+                            <div class="slider-container">
+                                <input type="range" class="slider" id="presentThreshold" min="30" max="90" value="45" oninput="updateSliderValue('presentThreshold', 'presentThresholdValue')">
+                                <div class="slider-value" id="presentThresholdValue">45 minutes</div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-group">
+                            <label class="setting-label">Proxy Detection Range</label>
+                            <div style="display: flex; gap: 1rem; align-items: center;">
+                                <div style="flex: 1;">
+                                    <input type="number" class="form-input" id="proxyMin" value="15" min="5" max="30" style="text-align: center;">
+                                    <small style="display: block; text-align: center; margin-top: 0.25rem;">Min (minutes)</small>
+                                </div>
+                                <div style="color: var(--text-secondary);">to</div>
+                                <div style="flex: 1;">
+                                    <input type="number" class="form-input" id="proxyMax" value="44" min="20" max="60" style="text-align: center;">
+                                    <small style="display: block; text-align: center; margin-top: 0.25rem;">Max (minutes)</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-group">
+                            <label class="setting-label">Grace Period for Late Arrivals</label>
+                            <div class="slider-container">
+                                <input type="range" class="slider" id="gracePeriod" min="0" max="10" value="5" oninput="updateSliderValue('gracePeriod', 'gracePeriodValue')">
+                                <div class="slider-value" id="gracePeriodValue">5 minutes</div>
+                            </div>
+                        </div>
+                        
+                        <div class="btn-group">
+                            <button class="btn btn-secondary" onclick="resetAttendanceSettings()">
+                                <i class="fas fa-undo"></i>
+                                Reset
+                            </button>
+                            <button class="btn btn-primary" onclick="saveAttendanceSettings()">
+                                <i class="fas fa-save"></i>
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Camera Configuration -->
+                <div class="settings-section">
+                    <div class="settings-header" onclick="toggleSection('camera-settings')">
+                        <i class="fas fa-camera" style="color: var(--warning-color);"></i>
+                        <h3>Camera Configuration</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="settings-body" id="camera-settings">
+                        <div class="toggle">
+                            <span class="setting-label">Enable Headcount Verification</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" class="toggle-input" id="cameraEnabled" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="setting-group">
+                            <label class="setting-label">Capture Frequency</label>
+                            <div class="slider-container">
+                                <input type="range" class="slider" id="captureFrequency" min="5" max="30" value="15" oninput="updateSliderValue('captureFrequency', 'captureFrequencyValue')">
+                                <div class="slider-value" id="captureFrequencyValue">Every 15 minutes</div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-group">
+                            <label class="setting-label">Image Processing Sensitivity</label>
+                            <div class="slider-container">
+                                <input type="range" class="slider" id="imageSensitivity" min="0" max="100" value="75" oninput="updateSliderValue('imageSensitivity', 'imageSensitivityValue')">
+                                <div class="slider-value" id="imageSensitivityValue">75%</div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-group">
+                            <label class="setting-label">Storage Retention</label>
+                            <div class="slider-container">
+                                <input type="range" class="slider" id="retentionDays" min="1" max="30" value="7" oninput="updateSliderValue('retentionDays', 'retentionDaysValue')">
+                                <div class="slider-value" id="retentionDaysValue">7 days</div>
+                            </div>
+                        </div>
+                        
+                        <div class="btn-group">
+                            <button class="btn btn-secondary" onclick="resetCameraSettings()">
+                                <i class="fas fa-undo"></i>
+                                Reset
+                            </button>
+                            <button class="btn btn-primary" onclick="saveCameraSettings()">
+                                <i class="fas fa-save"></i>
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Geofencing Settings -->
+                <div class="settings-section">
+                    <div class="settings-header" onclick="toggleSection('geo-settings')">
+                        <i class="fas fa-map-marked-alt" style="color: var(--error-color);"></i>
+                        <h3>Geofencing Settings</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="settings-body" id="geo-settings">
+                        <div class="toggle">
+                            <span class="setting-label">Enable Location Tracking</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" class="toggle-input" id="locationEnabled" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="setting-group">
+                            <label class="setting-label">Classroom Radius</label>
+                            <div class="slider-container">
+                                <input type="range" class="slider" id="classroomRadius" min="5" max="50" value="25" oninput="updateSliderValue('classroomRadius', 'classroomRadiusValue')">
+                                <div class="slider-value" id="classroomRadiusValue">25 meters</div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-group">
+                            <label class="setting-label">Location Accuracy Threshold</label>
+                            <div class="slider-container">
+                                <input type="range" class="slider" id="accuracyThreshold" min="5" max="50" value="10" oninput="updateSliderValue('accuracyThreshold', 'accuracyThresholdValue')">
+                                <div class="slider-value" id="accuracyThresholdValue">10 meters</div>
+                            </div>
+                        </div>
+                        
+                        <div class="btn-group">
+                            <button class="btn btn-secondary" onclick="resetGeoSettings()">
+                                <i class="fas fa-undo"></i>
+                                Reset
+                            </button>
+                            <button class="btn btn-primary" onclick="saveGeoSettings()">
+                                <i class="fas fa-save"></i>
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bottom-nav">
+                <a href="#" class="nav-item" onclick="switchScreen('home')">
+                    <i class="fas fa-home nav-icon"></i>
+                    <span class="nav-label">Home</span>
+                </a>
+                <a href="#" class="nav-item" onclick="switchScreen('timetable')">
+                    <i class="fas fa-calendar nav-icon"></i>
+                    <span class="nav-label">Timetable</span>
+                </a>
+                <a href="#" class="nav-item active" onclick="switchScreen('settings')">
+                    <i class="fas fa-cog nav-icon"></i>
+                    <span class="nav-label">Settings</span>
+                </a>
+                <a href="#" class="nav-item" onclick="switchScreen('profile')">
+                    <i class="fas fa-user nav-icon"></i>
+                    <span class="nav-label">Profile</span>
+                </a>
+                <a href="#" class="nav-item" onclick="switchScreen('live')">
+                    <i class="fas fa-broadcast-tower nav-icon"></i>
+                    <span class="nav-label">Live</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Profile Screen -->
+        <div class="screen" id="profile">
+            <div class="header">
+                <button class="back-btn" onclick="switchScreen('home')">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h1>Profile</h1>
+            </div>
+            
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h2 id="profileName">Arjun Sharma</h2>
+                <p>Computer Science Engineering</p>
+            </div>
+            
+            <div class="profile-info">
+                <div class="info-item">
+                    <span class="info-label">Email</span>
+                    <span class="info-value" id="profileEmail">arjun.sharma@college.edu</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Phone</span>
+                    <span class="info-value" id="profilePhone">+91 9876543210</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Course</span>
+                    <span class="info-value" id="profileCourse">Computer Science Engineering</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Year</span>
+                    <span class="info-value" id="profileYear">3rd Year</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Section</span>
+                    <span class="info-value" id="profileSection">A</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Total Classes</span>
+                    <span class="info-value">45</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Attended</span>
+                    <span class="info-value">42</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Attendance %</span>
+                    <span class="info-value" style="color: var(--success-color); font-weight: 700;">93.3%</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Device UUID</span>
+                    <span class="info-value" style="font-family: monospace; font-size: 0.8rem;">550e8400-e29b-41d4-a716-446655440000</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">MAC Address</span>
+                    <span class="info-value" style="font-family: monospace;">02:42:ac:11:00:02</span>
+                </div>
+            </div>
+            
+            <button class="btn logout-btn" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+                Logout
+            </button>
+            
+            <div class="bottom-nav">
+                <a href="#" class="nav-item" onclick="switchScreen('home')">
+                    <i class="fas fa-home nav-icon"></i>
+                    <span class="nav-label">Home</span>
+                </a>
+                <a href="#" class="nav-item" onclick="switchScreen('timetable')">
+                    <i class="fas fa-calendar nav-icon"></i>
+                    <span class="nav-label">Timetable</span>
+                </a>
+                <a href="#" class="nav-item" onclick="switchScreen('settings')">
+                    <i class="fas fa-cog nav-icon"></i>
+                    <span class="nav-label">Settings</span>
+                </a>
+                <a href="#" class="nav-item active" onclick="switchScreen('profile')">
+                    <i class="fas fa-user nav-icon"></i>
+                    <span class="nav-label">Profile</span>
+                </a>
+                <a href="#" class="nav-item" onclick="switchScreen('live')">
+                    <i class="fas fa-broadcast-tower nav-icon"></i>
+                    <span class="nav-label">Live</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Live Attendance Screen -->
+        <div class="screen" id="live">
+            <div class="header">
+                <button class="back-btn" onclick="switchScreen('home')">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h1>Live Attendance</h1>
+            </div>
+            
+            <div class="home-content">
+                <div class="status-card">
+                    <h3>Current Class</h3>
+                    <div class="class-subject" style="font-size: 1.25rem; margin: 0.5rem 0;">Data Structures</div>
+                    <div class="class-details">CS-101 • Dr. Priya Nair</div>
+                    <div class="class-time" style="margin-top: 0.5rem;">09:00 - 10:30</div>
+                </div>
+                
+                <div class="live-status">
+                    <div class="status-circle status-present pulse" id="liveStatusCircle">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <h2 id="liveStatusText">Present</h2>
+                    <div class="time-counter" id="timeCounter">42:15</div>
+                    <p>Time in class</p>
+                </div>
+                
+                <div class="detection-grid">
+                    <div class="detection-item">
+                        <div class="detection-icon detection-strong" id="bluetoothIcon">
+                            <i class="fas fa-bluetooth"></i>
+                        </div>
+                        <div>Bluetooth</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);" id="bluetoothStatus">Strong Signal</div>
+                    </div>
+                    
+                    <div class="detection-item">
+                        <div class="detection-icon detection-strong" id="wifiIcon">
+                            <i class="fas fa-wifi"></i>
+                        </div>
+                        <div>Wi-Fi</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);" id="wifiStatusText">Connected</div>
+                    </div>
+                    
+                    <div class="detection-item">
+                        <div class="detection-icon detection-strong" id="locationIcon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div>Location</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);" id="locationStatusText">In Range</div>
+                    </div>
+                    
+                    <div class="detection-item">
+                        <div class="detection-icon detection-strong" id="cameraIcon">
+                            <i class="fas fa-camera"></i>
+                        </div>
+                        <div>Camera</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);" id="cameraStatusText">Verified</div>
+                    </div>
+                </div>
+                
+                <div class="status-card">
+                    <h3>Attendance Prediction</h3>
+                    <div style="text-align: center; margin: 1rem 0;">
+                        <div class="status-indicator status-active">
+                            <i class="fas fa-check-circle"></i>
+                            Present (42+ minutes)
+                        </div>
+                    </div>
+                    <p style="font-size: 0.9rem; color: var(--text-secondary); text-align: center;">
+                        Based on detection parameters &amp; attendance rules
+                    </p>
+                </div>
+            </div>
+            
+            <div class="bottom-nav">
+                <a href="#" class="nav-item" onclick="switchScreen('home')">
+                    <i class="fas fa-home nav-icon"></i>
+                    <span class="nav-label">Home</span>
+                </a>
+                <a href="#" class="nav-item" onclick="switchScreen('timetable')">
+                    <i class="fas fa-calendar nav-icon"></i>
+                    <span class="nav-label">Timetable</span>
+                </a>
+                <a href="#" class="nav-item" onclick="switchScreen('settings')">
+                    <i class="fas fa-cog nav-icon"></i>
+                    <span class="nav-label">Settings</span>
+                </a>
+                <a href="#" class="nav-item" onclick="switchScreen('profile')">
+                    <i class="fas fa-user nav-icon"></i>
+                    <span class="nav-label">Profile</span>
+                </a>
+                <a href="#" class="nav-item active" onclick="switchScreen('live')">
+                    <i class="fas fa-broadcast-tower nav-icon"></i>
+                    <span class="nav-label">Live</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Toast Notification -->
+        <div class="toast" id="toast"></div>
+    </div>
+
+    <script>
+        // Application State
+        let appState = {
+            currentScreen: 'splash',
+            isRegistered: false,
+            studentData: {
+                name: 'Arjun Sharma',
+                email: 'arjun.sharma@college.edu',
+                phone: '+91 9876543210',
+                course: 'Computer Science Engineering',
+                year: '3rd Year',
+                section: 'A',
+                uuid: '550e8400-e29b-41d4-a716-446655440000',
+                macAddress: '02:42:ac:11:00:02',
+                photo: null
+            },
+            configs: {
+                raspberryPi: {
+                    ipAddress: '192.168.1.100',
+                    port: 5000,
+                    timeout: 15,
+                    retryAttempts: 3
+                },
+                detection: {
+                    bluetoothInterval: 60,
+                    wifiTimeout: 30,
+                    rssiThreshold: -70,
+                    sensitivity: 'Medium'
+                },
+                attendance: {
+                    presentThreshold: 45,
+                    proxyMin: 15,
+                    proxyMax: 44,
+                    absentThreshold: 15,
+                    gracePeriod: 5
+                },
+                camera: {
+                    enabled: true,
+                    captureFrequency: 15,
+                    sensitivity: 75,
+                    retentionDays: 7
+                },
+                geofencing: {
+                    radius: 25,
+                    accuracyThreshold: 10,
+                    locationEnabled: true
+                }
+            },
+            timetable: {
+                monday: [
+                    { subject: 'Data Structures', time: '09:00 - 10:30', room: 'CS-101', faculty: 'Dr. Priya Nair' },
+                    { subject: 'Database Systems', time: '11:00 - 12:30', room: 'CS-102', faculty: 'Prof. Rajesh Kumar' },
+                    { subject: 'Computer Networks', time: '14:00 - 15:30', room: 'CS-103', faculty: 'Dr. Anita Singh' }
+                ],
+                tuesday: [
+                    { subject: 'Operating Systems', time: '09:00 - 10:30', room: 'CS-104', faculty: 'Prof. Suresh Reddy' },
+                    { subject: 'Software Engineering', time: '11:00 - 12:30', room: 'CS-105', faculty: 'Dr. Meera Joshi' }
+                ],
+                wednesday: [
+                    { subject: 'Machine Learning', time: '09:00 - 10:30', room: 'CS-106', faculty: 'Dr. Vikram Gupta' },
+                    { subject: 'Web Development', time: '14:00 - 15:30', room: 'CS-107', faculty: 'Prof. Kavya Menon' }
+                ],
+                thursday: [],
+                friday: [],
+                saturday: [],
+                sunday: []
+            },
+            liveAttendance: {
+                timeInClass: 2535, // seconds (42:15)
+                status: 'present',
+                bluetoothStrong: true,
+                wifiConnected: true,
+                locationInRange: true,
+                cameraVerified: true
+            }
+        };
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Start splash screen
+            setTimeout(() => {
+                if (!appState.isRegistered) {
+                    switchScreen('registration');
+                } else {
+                    switchScreen('home');
+                }
+            }, 3000);
+
+            // Initialize form handlers
+            initializeFormHandlers();
+            
+            // Initialize settings
+            loadSettings();
+            
+            // Initialize timetable
+            loadTimetable();
+            
+            // Start live attendance timer
+            startLiveTimer();
+        });
+
+        // Screen Management
+        function switchScreen(screenName) {
+            // Hide all screens
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            
+            // Show target screen
+            document.getElementById(screenName).classList.add('active');
+            appState.currentScreen = screenName;
+            
+            // Update navigation
+            updateNavigation(screenName);
+        }
+
+        function updateNavigation(activeScreen) {
+            // Update bottom nav active state
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Find and activate the correct nav item
+            const activeNavItems = document.querySelectorAll(`[onclick="switchScreen('${activeScreen}')"]`);
+            activeNavItems.forEach(item => {
+                if (item.classList.contains('nav-item')) {
+                    item.classList.add('active');
+                }
+            });
+        }
+
+        // Form Handlers
+        function initializeFormHandlers() {
+            // Registration form
+            document.getElementById('registrationForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                completeRegistration();
+            });
+            
+            // Photo upload
+            document.getElementById('photoInput').addEventListener('change', function(e) {
+                handlePhotoUpload(e);
+            });
+        }
+
+        function handlePhotoUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('photoPreview');
+                    preview.innerHTML = `<img src="${e.target.result}" alt="Student Photo">`;
+                    appState.studentData.photo = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function completeRegistration() {
+            // Collect form data
+            appState.studentData.name = document.getElementById('studentName').value;
+            appState.studentData.email = document.getElementById('studentEmail').value;
+            appState.studentData.phone = document.getElementById('studentPhone').value;
+            appState.studentData.course = document.getElementById('studentCourse').value;
+            appState.studentData.year = document.getElementById('studentYear').value;
+            appState.studentData.section = document.getElementById('studentSection').value;
+            
+            appState.isRegistered = true;
+            
+            // Update profile data
+            updateProfileData();
+            
+            showToast('Registration completed successfully!');
+            switchScreen('home');
+        }
+
+        function saveToFirebase() {
+            showToast('Saved to Firebase successfully!');
+        }
+
+        function updateProfileData() {
+            document.getElementById('profileName').textContent = appState.studentData.name;
+            document.getElementById('profileEmail').textContent = appState.studentData.email;
+            document.getElementById('profilePhone').textContent = appState.studentData.phone;
+            document.getElementById('profileCourse').textContent = appState.studentData.course;
+            document.getElementById('profileYear').textContent = appState.studentData.year;
+            document.getElementById('profileSection').textContent = appState.studentData.section;
+            document.getElementById('welcomeName').textContent = appState.studentData.name.split(' ')[0];
+        }
+
+        // Settings Management
+        function toggleSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            const header = section.previousElementSibling;
+            const icon = header.querySelector('.fa-chevron-down, .fa-chevron-up');
+            
+            section.classList.toggle('expanded');
+            
+            if (section.classList.contains('expanded')) {
+                icon.className = 'fas fa-chevron-up';
+            } else {
+                icon.className = 'fas fa-chevron-down';
+            }
+        }
+
+        function updateSliderValue(sliderId, valueId) {
+            const slider = document.getElementById(sliderId);
+            const valueDisplay = document.getElementById(valueId);
+            const value = slider.value;
+            
+            let displayText = value;
+            
+            // Format based on slider type
+            if (sliderId.includes('Timeout') || sliderId.includes('Interval') || sliderId.includes('Frequency') || sliderId.includes('Period') || sliderId.includes('Threshold')) {
+                if (sliderId === 'captureFrequency') {
+                    displayText = `Every ${value} minutes`;
+                } else if (sliderId.includes('Threshold') && sliderId !== 'rssiThreshold') {
+                    displayText = `${value} minutes`;
+                } else if (sliderId === 'rssiThreshold') {
+                    displayText = `${value} dBm`;
+                } else if (sliderId.includes('Retry')) {
+                    displayText = `${value} attempts`;
+                } else if (sliderId === 'imageSensitivity') {
+                    displayText = `${value}%`;
+                } else if (sliderId === 'retentionDays') {
+                    displayText = `${value} days`;
+                } else if (sliderId.includes('Radius') || sliderId.includes('Accuracy')) {
+                    displayText = `${value} meters`;
+                } else {
+                    displayText = `${value} seconds`;
+                }
+            }
+            
+            valueDisplay.textContent = displayText;
+        }
+
+        function loadSettings() {
+            // Load Raspberry Pi settings
+            document.getElementById('piIpAddress').value = appState.configs.raspberryPi.ipAddress;
+            document.getElementById('piPort').value = appState.configs.raspberryPi.port;
+            document.getElementById('piTimeout').value = appState.configs.raspberryPi.timeout;
+            document.getElementById('piRetry').value = appState.configs.raspberryPi.retryAttempts;
+            updateSliderValue('piTimeout', 'piTimeoutValue');
+            updateSliderValue('piRetry', 'piRetryValue');
+            
+            // Load Detection settings
+            document.getElementById('bluetoothInterval').value = appState.configs.detection.bluetoothInterval;
+            document.getElementById('wifiTimeout').value = appState.configs.detection.wifiTimeout;
+            document.getElementById('rssiThreshold').value = appState.configs.detection.rssiThreshold;
+            document.getElementById('detectionSensitivity').value = appState.configs.detection.sensitivity;
+            updateSliderValue('bluetoothInterval', 'bluetoothIntervalValue');
+            updateSliderValue('wifiTimeout', 'wifiTimeoutValue');
+            updateSliderValue('rssiThreshold', 'rssiThresholdValue');
+            
+            // Load Attendance settings
+            document.getElementById('presentThreshold').value = appState.configs.attendance.presentThreshold;
+            document.getElementById('proxyMin').value = appState.configs.attendance.proxyMin;
+            document.getElementById('proxyMax').value = appState.configs.attendance.proxyMax;
+            document.getElementById('gracePeriod').value = appState.configs.attendance.gracePeriod;
+            updateSliderValue('presentThreshold', 'presentThresholdValue');
+            updateSliderValue('gracePeriod', 'gracePeriodValue');
+            
+            // Load Camera settings
+            document.getElementById('cameraEnabled').checked = appState.configs.camera.enabled;
+            document.getElementById('captureFrequency').value = appState.configs.camera.captureFrequency;
+            document.getElementById('imageSensitivity').value = appState.configs.camera.sensitivity;
+            document.getElementById('retentionDays').value = appState.configs.camera.retentionDays;
+            updateSliderValue('captureFrequency', 'captureFrequencyValue');
+            updateSliderValue('imageSensitivity', 'imageSensitivityValue');
+            updateSliderValue('retentionDays', 'retentionDaysValue');
+            
+            // Load Geofencing settings
+            document.getElementById('locationEnabled').checked = appState.configs.geofencing.locationEnabled;
+            document.getElementById('classroomRadius').value = appState.configs.geofencing.radius;
+            document.getElementById('accuracyThreshold').value = appState.configs.geofencing.accuracyThreshold;
+            updateSliderValue('classroomRadius', 'classroomRadiusValue');
+            updateSliderValue('accuracyThreshold', 'accuracyThresholdValue');
+        }
+
+        // Settings Save Functions
+        function savePiSettings() {
+            appState.configs.raspberryPi.ipAddress = document.getElementById('piIpAddress').value;
+            appState.configs.raspberryPi.port = parseInt(document.getElementById('piPort').value);
+            appState.configs.raspberryPi.timeout = parseInt(document.getElementById('piTimeout').value);
+            appState.configs.raspberryPi.retryAttempts = parseInt(document.getElementById('piRetry').value);
+            showToast('Raspberry Pi settings saved!');
+        }
+
+        function saveDetectionSettings() {
+            appState.configs.detection.bluetoothInterval = parseInt(document.getElementById('bluetoothInterval').value);
+            appState.configs.detection.wifiTimeout = parseInt(document.getElementById('wifiTimeout').value);
+            appState.configs.detection.rssiThreshold = parseInt(document.getElementById('rssiThreshold').value);
+            appState.configs.detection.sensitivity = document.getElementById('detectionSensitivity').value;
+            showToast('Detection settings saved!');
+        }
+
+        function saveAttendanceSettings() {
+            appState.configs.attendance.presentThreshold = parseInt(document.getElementById('presentThreshold').value);
+            appState.configs.attendance.proxyMin = parseInt(document.getElementById('proxyMin').value);
+            appState.configs.attendance.proxyMax = parseInt(document.getElementById('proxyMax').value);
+            appState.configs.attendance.gracePeriod = parseInt(document.getElementById('gracePeriod').value);
+            showToast('Attendance rules saved!');
+        }
+
+        function saveCameraSettings() {
+            appState.configs.camera.enabled = document.getElementById('cameraEnabled').checked;
+            appState.configs.camera.captureFrequency = parseInt(document.getElementById('captureFrequency').value);
+            appState.configs.camera.sensitivity = parseInt(document.getElementById('imageSensitivity').value);
+            appState.configs.camera.retentionDays = parseInt(document.getElementById('retentionDays').value);
+            showToast('Camera settings saved!');
+        }
+
+        function saveGeoSettings() {
+            appState.configs.geofencing.locationEnabled = document.getElementById('locationEnabled').checked;
+            appState.configs.geofencing.radius = parseInt(document.getElementById('classroomRadius').value);
+            appState.configs.geofencing.accuracyThreshold = parseInt(document.getElementById('accuracyThreshold').value);
+            showToast('Geofencing settings saved!');
+        }
+
+        // Reset Functions
+        function resetPiSettings() {
+            appState.configs.raspberryPi = {
+                ipAddress: '192.168.1.100',
+                port: 5000,
+                timeout: 15,
+                retryAttempts: 3
+            };
+            loadSettings();
+            showToast('Raspberry Pi settings reset to defaults!');
+        }
+
+        function resetDetectionSettings() {
+            appState.configs.detection = {
+                bluetoothInterval: 60,
+                wifiTimeout: 30,
+                rssiThreshold: -70,
+                sensitivity: 'Medium'
+            };
+            loadSettings();
+            showToast('Detection settings reset to defaults!');
+        }
+
+        function resetAttendanceSettings() {
+            appState.configs.attendance = {
+                presentThreshold: 45,
+                proxyMin: 15,
+                proxyMax: 44,
+                absentThreshold: 15,
+                gracePeriod: 5
+            };
+            loadSettings();
+            showToast('Attendance rules reset to defaults!');
+        }
+
+        function resetCameraSettings() {
+            appState.configs.camera = {
+                enabled: true,
+                captureFrequency: 15,
+                sensitivity: 75,
+                retentionDays: 7
+            };
+            loadSettings();
+            showToast('Camera settings reset to defaults!');
+        }
+
+        function resetGeoSettings() {
+            appState.configs.geofencing = {
+                radius: 25,
+                accuracyThreshold: 10,
+                locationEnabled: true
+            };
+            loadSettings();
+            showToast('Geofencing settings reset to defaults!');
+        }
+
+        function testConnection() {
+            const ip = document.getElementById('piIpAddress').value;
+            const port = document.getElementById('piPort').value;
+            
+            showToast('Testing connection to ' + ip + ':' + port + '...');
+            
+            // Simulate connection test
+            setTimeout(() => {
+                showToast('Connection successful! Pi is reachable.');
+            }, 2000);
+        }
+
+        // Timetable Functions
+        function loadTimetable() {
+            const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+            const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            
+            const weeklyContainer = document.getElementById('weeklyTimetable');
+            weeklyContainer.innerHTML = '';
+            
+            days.forEach((day, index) => {
+                const dayClasses = appState.timetable[day];
+                
+                const daySection = document.createElement('div');
+                daySection.innerHTML = `
+                    <div class="timetable-header">
+                        <h3>${dayNames[index]}</h3>
+                        <span>${dayClasses.length} classes</span>
+                    </div>
+                `;
+                
+                if (dayClasses.length > 0) {
+                    dayClasses.forEach(classItem => {
+                        const classDiv = document.createElement('div');
+                        classDiv.className = 'class-item';
+                        classDiv.innerHTML = `
+                            <div class="class-time">${classItem.time}</div>
+                            <div class="class-subject">${classItem.subject}</div>
+                            <div class="class-details">${classItem.room} • ${classItem.faculty}</div>
+                        `;
+                        daySection.appendChild(classDiv);
+                    });
+                } else {
+                    const noClassDiv = document.createElement('div');
+                    noClassDiv.className = 'class-item';
+                    noClassDiv.style.textAlign = 'center';
+                    noClassDiv.style.color = 'var(--text-secondary)';
+                    noClassDiv.innerHTML = 'No classes scheduled';
+                    daySection.appendChild(noClassDiv);
+                }
+                
+                weeklyContainer.appendChild(daySection);
+            });
+        }
+
+        function uploadTimetable() {
+            // Simulate file upload
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.pdf,.jpg,.jpeg,.png';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    showToast('Timetable uploaded successfully!');
+                }
+            };
+            input.click();
+        }
+
+        function exportTimetable() {
+            showToast('Timetable exported successfully!');
+        }
+
+        // Live Attendance Functions
+        function startLiveTimer() {
+            setInterval(() => {
+                if (appState.currentScreen === 'live') {
+                    appState.liveAttendance.timeInClass++;
+                    updateLiveDisplay();
+                }
+            }, 1000);
+        }
+
+        function updateLiveDisplay() {
+            const timeCounter = document.getElementById('timeCounter');
+            const minutes = Math.floor(appState.liveAttendance.timeInClass / 60);
+            const seconds = appState.liveAttendance.timeInClass % 60;
+            timeCounter.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Update status based on time
+            const statusCircle = document.getElementById('liveStatusCircle');
+            const statusText = document.getElementById('liveStatusText');
+            
+            const minutesInClass = minutes;
+            
+            if (minutesInClass >= appState.configs.attendance.presentThreshold) {
+                statusCircle.className = 'status-circle status-present pulse';
+                statusCircle.innerHTML = '<i class="fas fa-check"></i>';
+                statusText.textContent = 'Present';
+            } else if (minutesInClass >= appState.configs.attendance.proxyMin && minutesInClass <= appState.configs.attendance.proxyMax) {
+                statusCircle.className = 'status-circle status-proxy pulse';
+                statusCircle.innerHTML = '<i class="fas fa-exclamation"></i>';
+                statusText.textContent = 'Proxy Risk';
+            } else {
+                statusCircle.className = 'status-circle status-absent pulse';
+                statusCircle.innerHTML = '<i class="fas fa-times"></i>';
+                statusText.textContent = 'Absent';
+            }
+        }
+
+        // Utility Functions
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function logout() {
+            appState.isRegistered = false;
+            appState.studentData = {
+                name: '',
+                email: '',
+                phone: '',
+                course: '',
+                year: '',
+                section: '',
+                uuid: '550e8400-e29b-41d4-a716-446655440000',
+                macAddress: '02:42:ac:11:00:02',
+                photo: null
+            };
+            
+            showToast('Logged out successfully!');
+            setTimeout(() => {
+                switchScreen('registration');
+            }, 1000);
+        }
+
+        // Initialize profile data on load
+        setTimeout(() => {
+            updateProfileData();
+        }, 100);
+    </script>
+</body>
+</html>

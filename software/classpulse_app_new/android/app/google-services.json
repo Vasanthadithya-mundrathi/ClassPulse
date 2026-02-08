@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "744450083361",
+    "project_id": "classpulse-804ce",
+    "storage_bucket": "classpulse-804ce.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:744450083361:android:29b3efd7dd71a4bc4a3160",
+        "android_client_info": {
+          "package_name": "com.classpulse.classpulse_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCA8A58zRwxug1v9JRwVY84-ivjDsTyyjU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
