@@ -280,6 +280,15 @@ classpulse/
 
 ---
 
+## 👥 Team Members
+
+- Vasanth
+- Shagufta
+- Meghana
+- Nagesh
+
+---
+
 ## 💡 How It Works
 
 ```
